@@ -679,21 +679,50 @@ void TextEditor::HandleKeyboardInputs() {
 		else if (!IsReadOnly() && !alt && !ctrl && !super && ImGui::IsKeyPressed(ImGuiKey_Tab))
 			EnterCharacter('\t', shift);
 		if (!IsReadOnly() && !ctrl && !super) {
+			static std::unordered_map<ImGuiKey, std::pair<char, char>> shiftedCharMap = {
+			    {ImGuiKey_1, {'1', '!'}},
+			    {ImGuiKey_2, {'2', '@'}},
+			    {ImGuiKey_3, {'3', '#'}},
+			    {ImGuiKey_4, {'4', '$'}},
+			    {ImGuiKey_5, {'5', '%'}},
+			    {ImGuiKey_6, {'6', '^'}},
+			    {ImGuiKey_7, {'7', '&'}},
+			    {ImGuiKey_8, {'8', '*'}},
+			    {ImGuiKey_9, {'9', '('}},
+			    {ImGuiKey_0, {'0', ')'}},
+			    {ImGuiKey_GraveAccent, {'`', '~'}},
+			    {ImGuiKey_Minus, {'-', '_'}},
+			    {ImGuiKey_Equal, {'=', '+'}},
+			    {ImGuiKey_LeftBracket, {'[', '{'}},
+			    {ImGuiKey_RightBracket, {']', '}'}},
+			    {ImGuiKey_Semicolon, {';', ':'}},
+			    {ImGuiKey_Apostrophe, {'\'', '"'}},
+			    {ImGuiKey_Comma, {',', '<'}},
+			    {ImGuiKey_Period, {'.', '>'}},
+			    {ImGuiKey_Slash, {'/', '?'}},
+			    {ImGuiKey_Backslash, {'\\', '|'}},
+			};
+
 			for (int key = ImGuiKey_NamedKey_BEGIN; key < ImGuiKey_COUNT; ++key) {
 				if (ImGui::IsKeyPressed((ImGuiKey)key)) {
 					if (key == ImGuiKey_Space) {
-						EnterCharacter(' ', shift); // special case for spacebar
+						EnterCharacter(' ', shift);
+						continue;
+					}
+
+					// Handle shifted symbols
+					if (shiftedCharMap.count((ImGuiKey)key)) {
+						char c = shift ? shiftedCharMap[(ImGuiKey)key].second
+							       : shiftedCharMap[(ImGuiKey)key].first;
+						EnterCharacter(c, shift);
 						continue;
 					}
 
 					const char* name = ImGui::GetKeyName((ImGuiKey)key);
-					if (name && name[0] != '\0' && name[1] == '\0') // Single printable char
-					{
+					if (name && name[0] != '\0' && name[1] == '\0') {
 						char c = name[0];
-
 						if (!shift && c >= 'A' && c <= 'Z')
-							c += 32; // convert to lowercase
-
+							c += 32;
 						EnterCharacter(c, shift);
 					}
 				}
